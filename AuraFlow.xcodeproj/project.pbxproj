@@ -52,6 +52,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D90B63DF2EB39E68008119E2 /* Build configuration list for PBXNativeTarget "AuraFlow" */;
 			buildPhases = (
+				D90B63E22EB39F5A008119E2 /* SwiftLint & SwiftFormat */,
 				D90B63D02EB39E67008119E2 /* Sources */,
 				D90B63D12EB39E67008119E2 /* Frameworks */,
 				D90B63D22EB39E67008119E2 /* Resources */,
@@ -114,6 +115,31 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		D90B63E22EB39F5A008119E2 /* SwiftLint & SwiftFormat */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.swiftlint.yml",
+				"$(SRCROOT)/.swiftformat",
+			);
+			name = "SwiftLint & SwiftFormat";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/lint-format.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\n\nROOT=\"${SRCROOT}\"\nSRC_DIR=\"${SRCROOT}/AuraFlow\"\nSTAMP=\"${DERIVED_FILE_DIR}/lint-format.stamp\"\n\necho \"Linting & formatting in: ${SRC_DIR}\"\n\nif command -v swiftlint >/dev/null 2>&1; then\n  echo \"Running SwiftLint…\"\n  # Pass the directory as a positional argument (no --path)\n  swiftlint --config \"${ROOT}/.swiftlint.yml\" \"${SRC_DIR}\" || true\nelse\n  echo \"warning: SwiftLint not installed\"\nfi\n\nif command -v swiftformat >/dev/null 2>&1; then\n  echo \"Running SwiftFormat…\"\n  swiftformat \"${SRC_DIR}\" --config \"${ROOT}/.swiftformat\" || true\nelse\n  echo \"warning: SwiftFormat not installed\"\nfi\n\n# Ensure script reports success\ntouch \"${STAMP}\"\nexit 0\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		D90B63D02EB39E67008119E2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -163,7 +189,7 @@
 				DEVELOPMENT_TEAM = R82QQAR2DG;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -227,7 +253,7 @@
 				DEVELOPMENT_TEAM = R82QQAR2DG;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
