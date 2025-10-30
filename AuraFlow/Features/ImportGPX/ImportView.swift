@@ -32,6 +32,8 @@ struct ImportView: View {
     @State private var isImporterPresented = false
     @State private var track: Track?
     @State private var error: String?
+    @EnvironmentObject private var store: RunStore
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
@@ -76,9 +78,19 @@ struct ImportView: View {
                     defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
                     do {
                         let parsed = try GPXParser().parse(url: url)
+                        // Save lightweight snapshot (ring buffer handled by RunStore)
+                        let run = Run.from(track: parsed,
+                                           title: formattedTitle(parsed),
+                                           location: nil)
+                        store.add(run)
+
+                        // Keep in-state for immediate preview if user stays here
                         track = parsed
                         error = nil
                         print("Imported GPX:", url.lastPathComponent, "points:", parsed.points.count)
+
+                        // Return to Home list so the new card appears
+                        dismiss()
                     } catch {
                         self.error = error.localizedDescription
                         print("GPX parse error:", error)
@@ -110,5 +122,12 @@ struct ImportView: View {
         let m = Int(secPerMile) / 60
         let s = Int(secPerMile) % 60
         return String(format: "%d:%02d", m, s)
+    }
+
+    private func formattedTitle(_ track: Track) -> String {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        return f.string(from: .now)
     }
 }
