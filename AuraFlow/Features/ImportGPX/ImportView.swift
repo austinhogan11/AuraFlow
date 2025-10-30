@@ -32,49 +32,56 @@ struct ImportView: View {
     @State private var error: String?
 
     var body: some View {
-        VStack(spacing: 16) {
-            Text("AuraFlow").font(.largeTitle).bold()
+        NavigationStack {
+            VStack(spacing: 16) {
+                Text("AuraFlow").font(.largeTitle).bold()
 
-            Button("Import GPX") { isImporterPresented = true }
-                .buttonStyle(.borderedProminent)
+                Button("Import GPX") { isImporterPresented = true }
+                    .buttonStyle(.borderedProminent)
 
-            if let t = track {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Points: \(t.points.count)")
-                    Text("Distance: \(formatMiles(t.distance))")
-                    Text("Duration: \(formatDuration(t.duration))")
-                    Text("Avg Pace: \(formatPace(t.averagePaceSecondsPerMile)) /mi")
+                if let t = track {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Points: \(t.points.count)")
+                        Text("Distance: \(formatMiles(t.distance))")
+                        Text("Duration: \(formatDuration(t.duration))")
+                        Text("Avg Pace: \(formatPace(t.averagePaceSecondsPerMile)) /mi")
+                    }
+                    .padding()
+                    NavigationLink("Open Preview") {
+                        TrailPreviewView(track: t, preset: .classicGlow)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .padding()
-            }
 
-            if let e = error {
-                Text(e).foregroundColor(.red)
-            }
-            Spacer()
-        }
-        .padding()
-        .fileImporter(isPresented: $isImporterPresented,
-                      allowedContentTypes: [UTType.gpx, .xml], // Prefer GPX, allow XML fallback
-                      allowsMultipleSelection: false)
-        { result in
-            switch result {
-            case let .success(urls):
-                guard let url = urls.first else { return }
-                // Security-scoped access is required for Files/iCloud URLs
-                let needsAccess = url.startAccessingSecurityScopedResource()
-                defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
-                do {
-                    let parsed = try GPXParser().parse(url: url)
-                    track = parsed
-                    error = nil
-                    print("Imported GPX:", url.lastPathComponent, "points:", parsed.points.count)
-                } catch {
-                    self.error = error.localizedDescription
-                    print("GPX parse error:", error)
+                if let e = error {
+                    Text(e).foregroundColor(.red)
                 }
-            case let .failure(err):
-                error = err.localizedDescription
+                Spacer()
+            }
+            .padding()
+            .fileImporter(isPresented: $isImporterPresented,
+                          allowedContentTypes: [UTType.gpx, .xml], // Prefer GPX, allow XML fallback
+                          allowsMultipleSelection: false)
+            {
+                result in
+                switch result {
+                case let .success(urls):
+                    guard let url = urls.first else { return }
+                    // Security-scoped access is required for Files/iCloud URLs
+                    let needsAccess = url.startAccessingSecurityScopedResource()
+                    defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
+                    do {
+                        let parsed = try GPXParser().parse(url: url)
+                        track = parsed
+                        error = nil
+                        print("Imported GPX:", url.lastPathComponent, "points:", parsed.points.count)
+                    } catch {
+                        self.error = error.localizedDescription
+                        print("GPX parse error:", error)
+                    }
+                case let .failure(err):
+                    error = err.localizedDescription
+                }
             }
         }
     }
