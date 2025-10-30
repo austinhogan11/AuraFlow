@@ -19,6 +19,8 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+private let gold = Color(red: 0.98, green: 0.86, blue: 0.35)
+
 // Allow explicit GPX UTI (fallback to XML if not resolvable on this OS)
 extension UTType {
     static var gpx: UTType {
@@ -38,6 +40,7 @@ struct ImportView: View {
 
                 Button("Import GPX") { isImporterPresented = true }
                     .buttonStyle(.borderedProminent)
+                    .tint(gold)
 
                 if let t = track {
                     VStack(alignment: .leading, spacing: 8) {
@@ -59,6 +62,7 @@ struct ImportView: View {
                 Spacer()
             }
             .padding()
+            .preferredColorScheme(.light)
             .fileImporter(isPresented: $isImporterPresented,
                           allowedContentTypes: [UTType.gpx, .xml], // Prefer GPX, allow XML fallback
                           allowsMultipleSelection: false)
@@ -94,9 +98,11 @@ struct ImportView: View {
     }
 
     private func formatDuration(_ s: TimeInterval) -> String {
-        let m = Int(s) / 60
-        let sec = Int(s) % 60
-        return String(format: "%d:%02d", m, sec)
+        let total = max(0, Int(s))
+        let h = total / 3600
+        let m = (total % 3600) / 60
+        let sec = total % 60
+        return String(format: "%d:%02d:%02d", h, m, sec)
     }
 
     private func formatPace(_ secPerMile: Double) -> String {

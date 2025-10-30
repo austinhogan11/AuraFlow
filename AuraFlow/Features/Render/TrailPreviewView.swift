@@ -8,6 +8,8 @@
 import CoreLocation
 import SwiftUI
 
+private let gold = Color(red: 0.98, green: 0.86, blue: 0.35)
+
 struct TrailPreviewView: View {
     let track: Track
     @State var preset: TrailPreset = .classicGlow
@@ -22,6 +24,7 @@ struct TrailPreviewView: View {
                 }
             }
             .pickerStyle(.segmented)
+            .tint(gold)
             .padding(.horizontal)
 
             // Canvas preview
@@ -72,11 +75,11 @@ struct TrailPreviewView: View {
                         lineWidth: preset.lineWidth
                     )
                 }
-                .background(Color.black)
+                .background(Color(.secondarySystemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
                 )
                 .padding(.horizontal)
             }
@@ -93,7 +96,8 @@ struct TrailPreviewView: View {
             Spacer()
         }
         .navigationTitle("Preview")
-        .background(Color.black.ignoresSafeArea())
+        .preferredColorScheme(.light)
+        .background(Color(.systemBackground).ignoresSafeArea())
     }
 
     // MARK: - Formatters
@@ -104,8 +108,11 @@ struct TrailPreviewView: View {
     }
 
     private func formatDuration(_ s: TimeInterval) -> String {
-        let m = Int(s) / 60, sec = Int(s) % 60
-        return String(format: "%d:%02d", m, sec)
+        let total = max(0, Int(s))
+        let h = total / 3600
+        let m = (total % 3600) / 60
+        let sec = total % 60
+        return String(format: "%d:%02d:%02d", h, m, sec)
     }
 
     private func formatPace(_ secPerMile: Double) -> String {
@@ -120,11 +127,13 @@ private struct StatChip: View {
     let value: String
     var body: some View {
         VStack(spacing: 4) {
-            Text(title).font(.caption).foregroundColor(.white.opacity(0.7))
-            Text(value).font(.headline).foregroundColor(.white)
+            Text(title).font(.caption).foregroundColor(.secondary)
+            Text(value).font(.headline).foregroundColor(.primary)
         }
-        .padding(.vertical, 8).padding(.horizontal, 12)
-        .background(Color.white.opacity(0.06))
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(Color(.secondarySystemBackground))
+        .overlay(Capsule().stroke(Color.black.opacity(0.08), lineWidth: 1))
         .clipShape(Capsule())
     }
 }
