@@ -17,6 +17,14 @@
      •    Simple formatters for miles, duration, and pace.
  */
 import SwiftUI
+import UniformTypeIdentifiers
+
+// Allow explicit GPX UTI (fallback to XML if not resolvable on this OS)
+extension UTType {
+    static var gpx: UTType {
+        UTType(filenameExtension: "gpx") ?? .xml
+    }
+}
 
 struct ImportView: View {
     @State private var isImporterPresented = false
@@ -47,25 +55,32 @@ struct ImportView: View {
         }
         .padding()
         .fileImporter(isPresented: $isImporterPresented,
-                      allowedContentTypes: [.xml], // GPX is XML; we’ll later narrow with UTType if needed
-                      allowsMultipleSelection: false) { result in
+                      allowedContentTypes: [UTType.gpx, .xml], // Prefer GPX, allow XML fallback
+                      allowsMultipleSelection: false)
+        { result in
             switch result {
-            case .success(let urls):
+            case let .success(urls):
                 guard let url = urls.first else { return }
+                // Security-scoped access is required for Files/iCloud URLs
+                let needsAccess = url.startAccessingSecurityScopedResource()
+                defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
                 do {
                     let parsed = try GPXParser().parse(url: url)
-                    self.track = parsed
-                    self.error = nil
+                    track = parsed
+                    error = nil
+                    print("Imported GPX:", url.lastPathComponent, "points:", parsed.points.count)
                 } catch {
                     self.error = error.localizedDescription
+                    print("GPX parse error:", error)
                 }
-            case .failure(let err):
-                self.error = err.localizedDescription
+            case let .failure(err):
+                error = err.localizedDescription
             }
         }
     }
 
     // MARK: - Formatters
+
     private func formatMiles(_ meters: Double) -> String {
         let miles = meters / 1609.34
         return String(format: "%.2f mi", miles)
@@ -78,7 +93,7 @@ struct ImportView: View {
     }
 
     private func formatPace(_ secPerMile: Double) -> String {
-        guard secPerMile.isFinite && secPerMile > 0 else { return "—" }
+        guard secPerMile.isFinite, secPerMile > 0 else { return "—" }
         let m = Int(secPerMile) / 60
         let s = Int(secPerMile) % 60
         return String(format: "%d:%02d", m, s)

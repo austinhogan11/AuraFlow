@@ -1,4 +1,4 @@
-line_length: 140
+line_length: 160
 disabled_rules:
   - trailing_whitespace
   - identifier_name
